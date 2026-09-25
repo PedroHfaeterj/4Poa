@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.eclipse.m2e.pde.feature"
+      label="%featureName"
+      version="2.3.700.20260602-0814"
+      provider-name="%providerName"
+      plugin="org.eclipse.m2e.core">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <requires>
+      <import plugin="org.eclipse.core.runtime" version="3.19.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.pde.ui" version="3.12.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.equinox.frameworkadmin" version="2.1.400" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.m2e.maven.runtime"/>
+      <import plugin="org.eclipse.m2e.core"/>
+      <import plugin="org.eclipse.jface"/>
+      <import plugin="org.eclipse.m2e.versions.api"/>
+      <import plugin="org.eclipse.m2e.versions.common"/>
+      <import plugin="org.eclipse.m2e.versions.model"/>
+   </requires>
+
+   <plugin
+         id="org.eclipse.m2e.pde.target"
+         version="2.1.300.20260602-0814"/>
+
+   <plugin
+         id="org.eclipse.m2e.pde.ui"
+         version="2.1.200.20260602-0814"/>
+
+   <plugin
+         id="org.eclipse.m2e.pde.connector"
+         version="2.2.101.20250727-0612"/>
+
+<license url="%licenseURL">
+      %license
+   </license></feature>
