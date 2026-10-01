@@ -2,14 +2,12 @@
 <%@ page import="br.com.faculdade.dao.ProdutoDAO" %>
 <%@ page import="br.com.faculdade.model.Produto" %>
 <%@ page import="java.util.List" %>
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Meu E-commerce - Início</title>
-    
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
     <header>
@@ -18,16 +16,23 @@
         <div class="menu-usuario">
             <% if (session.getAttribute("usuarioLogado") != null) { %>
                 <span>Bem-vindo, <%= session.getAttribute("usuarioLogado") %>!</span>
+                
+                <!-- O botão do painel só aparece para o admin -->
+                <% if ("admin@loja.com".equals(session.getAttribute("usuarioLogado"))) { %>
+                    <a href="admin.jsp" style="color: #ffeb3b; font-weight: bold;">Painel Admin</a>
+                <% } %>
+                
                 <a href="carrinho.jsp">Ver Carrinho</a>
                 <a href="LogoutServlet">Sair</a>
             <% } else { %>
-                <a href="login.jsp">Entre ou Cadastre-se</a>
+                <a href="login.jsp">Entre</a>
+                <a href="cadastro.jsp">Cadastre-se</a>
                 <a href="carrinho.jsp">Carrinho</a>
             <% } %>
         </div>
     </header>
 
-   
+    <!-- O Easter Egg do Professor Continua Firme e Forte -->
     <marquee behavior="scroll" direction="left" scrollamount="10" style="background-color: #4dd0e1; color: #1a237e; padding: 8px 0; font-weight: bold; font-size: 14px;">
         ⚡ SUPER OFERTAS: Compre agora e garanta pontos extras na média final do semestre! Aproveite as promoções exclusivas! ⚡
     </marquee>

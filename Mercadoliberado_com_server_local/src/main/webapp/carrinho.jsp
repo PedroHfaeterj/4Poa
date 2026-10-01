@@ -3,6 +3,19 @@
 <%@ page import="br.com.faculdade.model.Produto" %>
 <!DOCTYPE html>
 <html>
+<head>
+    <meta charset="UTF-8">
+    <title>Seu Carrinho</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Meu E-commerce</h1>
+        <div class="menu-usuario">
+            <a href="index.jsp">Voltar para a Loja</a>
+            <a href="LogoutServlet">Sair</a>
+        </div>
+    </header>
 
     <div class="container">
         <h2>Seu Carrinho de Compras</h2>

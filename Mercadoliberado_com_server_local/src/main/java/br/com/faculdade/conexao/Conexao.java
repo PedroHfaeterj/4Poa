@@ -41,18 +41,20 @@ public class Conexao {
                            + "nome VARCHAR(255), "
                            + "preco DOUBLE)";
 
-      
         String sqlAdmin = "MERGE INTO usuarios (email, senha) KEY(email) "
                         + "VALUES ('admin@loja.com', '123456')";
 
-        try (PreparedStatement stmt1 = conn.prepareStatement(sqlUsuarios);
-             PreparedStatement stmt2 = conn.prepareStatement(sqlProdutos);
-             PreparedStatement stmt3 = conn.prepareStatement(sqlAdmin)) {
-             
-            stmt1.execute();
-            stmt2.execute();
-            stmt3.execute();
-            System.out.println("-> Tabelas verificadas e Administrador configurado com sucesso!");
+       
+        try (java.sql.Statement stmt = conn.createStatement()) {
+            stmt.execute(sqlUsuarios);
+            stmt.execute(sqlProdutos);
+            
+           
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlAdmin)) {
+                pstmt.execute();
+            }
+            
+            System.out.println("-> Tabelas criadas na ordem correta e Administrador configurado!");
 
         } catch (Exception e) {
             System.err.println("Erro ao inicializar banco de dados: " + e.getMessage());

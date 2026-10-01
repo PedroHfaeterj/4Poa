@@ -10,7 +10,7 @@ import br.com.faculdade.model.Usuario;
 public class UsuarioDAO {
 
     public Usuario validarLogin(String email, String senha) {
-        String sql = "SELECT * FROM usuarios WHERE email = ? AND senha = ?";
+    	String sql = "SELECT * FROM usuarios WHERE email = ? AND senha = ?";
         Usuario usuarioEncontrado = null;
         
         try (Connection conn = Conexao.getConnection(); 
@@ -33,5 +33,23 @@ public class UsuarioDAO {
         }
         
         return usuarioEncontrado;
+    }
+    
+
+    public void salvar(Usuario usuario) {
+        String sql = "INSERT INTO usuarios (email, senha) VALUES (?, ?)";
+        
+        try (Connection conn = Conexao.getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             
+            stmt.setString(1, usuario.getEmail());
+            stmt.setString(2, usuario.getSenha());
+            stmt.executeUpdate();
+            
+            System.out.println("-> Novo usuário cadastrado com sucesso: " + usuario.getEmail());
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao salvar novo usuário: " + e.getMessage());
+        }
     }
 }

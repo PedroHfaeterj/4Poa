@@ -21,16 +21,19 @@ public class LoginServlet extends HttpServlet {
         String email = request.getParameter("email");
         String senha = request.getParameter("senha");
         
-        // Consulta o banco de dados em vez de usar valores fixos
+        System.out.println("Tentando fazer login com: " + email);
+        
+        // Consulta real ao banco de dados H2
         UsuarioDAO dao = new UsuarioDAO();
         Usuario usuario = dao.validarLogin(email, senha);
         
         if (usuario != null) {
+            System.out.println("Login aprovado pelo banco para o ID: " + usuario.getId());
             HttpSession session = request.getSession();
-            // Guarda o e-mail na sessão para identificar quem está logado
             session.setAttribute("usuarioLogado", usuario.getEmail());
             response.sendRedirect("index.jsp");
         } else {
+            System.out.println("Login reprovado. Usuário não encontrado no banco.");
             PrintWriter out = response.getWriter();
             out.println("<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Erro no Login</title><link rel='stylesheet' href='css/style.css'></head><body>");
             out.println("<div class='container'><div class='box-branca' style='text-align: center;'>");
