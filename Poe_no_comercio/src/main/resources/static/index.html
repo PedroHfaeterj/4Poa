@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Põe no Comércio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Painel da Loja - Põe no Comércio</h1>
+
+    <div class="card">
+        <h2>Cadastrar Novo Produto</h2>
+        <input type="text" id="nome" placeholder="Nome do Produto">
+        <input type="number" id="preco" placeholder="Preço (ex: 150.00)" step="0.01">
+        <input type="text" id="descricao" placeholder="Descrição">
+        <button onclick="salvarProduto()">Cadastrar</button>
+    </div>
+
+    <div class="card">
+        <h2>Produtos Disponíveis</h2>
+        <ul id="lista-produtos"></ul>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
