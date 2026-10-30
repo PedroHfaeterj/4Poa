@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro - Põe no Comércio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header id="menu-navegacao"></header>
+
+    <div class="container">
+        <div class="card" style="max-width: 400px; margin: 50px auto; text-align: center;">
+            <h2>Criar Nova Conta</h2>
+            <input type="text" id="nome" placeholder="Nome Completo">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="text" id="cpf" placeholder="CPF">		
+            <input type="password" id="senha" placeholder="Senha">
+            <button onclick="cadastrarCliente()" style="width: 100%; margin-top: 10px;">Cadastrar</button>
+            <p style="margin-top: 15px;"><a href="login.html">Já tenho uma conta (Fazer Login)</a></p>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="navbar.js"></script>
+</body>
+</html>

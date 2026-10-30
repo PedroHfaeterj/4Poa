@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/produtos")
@@ -22,5 +23,10 @@ public class ProdutoController {
     @PostMapping
     public Produto cadastrarProduto(@RequestBody Produto produto) {
         return repository.save(produto);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletarProduto(@PathVariable Long id) {
+        repository.deleteById(id);
     }
 }

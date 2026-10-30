@@ -6,21 +6,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Painel da Loja - Põe no Comércio</h1>
-
-    <div class="card">
-        <h2>Cadastrar Novo Produto</h2>
-        <input type="text" id="nome" placeholder="Nome do Produto">
-        <input type="number" id="preco" placeholder="Preço (ex: 150.00)" step="0.01">
-        <input type="text" id="descricao" placeholder="Descrição">
-        <button onclick="salvarProduto()">Cadastrar</button>
+    <header id="menu-navegacao"></header>
+    
+    <div class="container">
+        <h1>Painel da Loja - Põe no Comércio</h1>
+        <div class="card">
+            <h2>Produtos Disponíveis</h2>
+            <ul id="lista-produtos"></ul>
+        </div>
     </div>
-
-    <div class="card">
-        <h2>Produtos Disponíveis</h2>
-        <ul id="lista-produtos"></ul>
-    </div>
-
+    
+    <script>
+        const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+        if (!usuario) {
+            window.location.href = "login.html"; 
+        }
+    </script>
     <script src="app.js"></script>
+    <script src="navbar.js"></script>
 </body>
 </html>
