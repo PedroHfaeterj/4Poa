@@ -1,4 +1,4 @@
-const API_CLIENTES = "http://localhost:8080/clientes";
+const API_CLIENTES = "/clientes";
 
 function cadastrarCliente() {
     const nome = document.getElementById("nome").value;

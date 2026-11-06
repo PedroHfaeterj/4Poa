@@ -51,7 +51,8 @@ function finalizarCompra() {
         produtos: carrinho.map(produto => ({ id: produto.id }))
     };
 
-    fetch("http://localhost:8080/pedidos", {
+    
+    fetch("/pedidos", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
