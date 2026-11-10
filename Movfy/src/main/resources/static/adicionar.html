@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Movfy - Buscar Filme</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Meu Diário</a> | 
+        <a href="adicionar.html">Adicionar Filme</a> | 
+        <a href="roleta.html">Roleta do Oscar</a>
+    </nav>
+
+    <h1>Encontrar Filme</h1>
+    <p style="margin-bottom: 20px;">Pesquise pelo nome e clique no filme para avaliar.</p>
+
+    <div class="form-container">
+        <input type="text" id="nomeFilme" placeholder="Ex: Matrix, O Senhor dos Anéis...">
+        <button onclick="pesquisar()">Pesquisar no TMDB</button>
+    </div>
+
+    <!-- Div onde os resultados vão aparecer em formato de grade -->
+    <div id="resultados-busca" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 30px;">
+    </div>
+
+    <script>
+        async function pesquisar() {
+            const nome = document.getElementById('nomeFilme').value;
+            if (!nome) return;
+
+            document.getElementById('resultados-busca').innerHTML = '<p>Buscando...</p>';
+
+            try {
+                // Chama a nova rota de busca que você criou no Java
+                const response = await fetch(`http://localhost:8080/api/diario/buscar?nome=${encodeURIComponent(nome)}`);
+                const filmes = await response.json();
+
+                const container = document.getElementById('resultados-busca');
+                container.innerHTML = '';
+
+                if (filmes.length === 0) {
+                    container.innerHTML = '<p>Nenhum filme encontrado.</p>';
+                    return;
+                }
+
+                // Renderiza os cards de resultado
+                filmes.forEach(filme => {
+                    // Passamos o ID e o Título protegidos com aspas no JavaScript
+                    container.innerHTML += `
+                        <div class="card" style="cursor: pointer;" onclick="avaliarESalvar(${filme.id}, '${filme.titulo.replace(/'/g, "\\'")}')">
+                            <img src="${filme.urlCapa}" alt="${filme.titulo}">
+                            <h3>${filme.titulo}</h3>
+                            <button style="width: 100%; margin-top: 10px;">Adicionar</button>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                alert("Erro ao conectar com a API.");
+            }
+        }
+
+        // Função chamada quando o usuário clica no card do filme
+        async function avaliarESalvar(idTmdb, titulo) {
+            // Usa a função nativa do navegador para pedir a nota
+            let nota = prompt(`Qual a sua nota de 1 a 5 para "${titulo}"?`);
+            
+            // Valida se o usuário não cancelou e se digitou um número válido
+            if (nota !== null && nota >= 1 && nota <= 5) {
+                try {
+                    // Chama a rota original de salvar que já estava funcionando
+                    const response = await fetch(`http://localhost:8080/api/diario/${idTmdb}/${nota}`, { method: 'POST' });
+                    
+                    if (response.ok) {
+                        alert("Filme salvo no seu diário com sucesso!");
+                        window.location.href = "index.html"; 
+                    } else {
+                        alert("Erro ao salvar o filme.");
+                    }
+                } catch (error) {
+                    alert("Erro de conexão.");
+                }
+            } else if (nota !== null) {
+                alert("Nota inválida! Digite apenas números de 1 a 5.");
+            }
+        }
+    </script>
+</body>
+</html>

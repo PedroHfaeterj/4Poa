@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Movfy - Roleta do Oscar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Meu Diário</a> | 
+        <a href="adicionar.html">Adicionar Filme</a> | 
+        <a href="roleta.html">Roleta do Oscar</a>
+    </nav>
+
+    <h1>Roleta do Oscar</h1>
+    <p style="margin-bottom: 20px;">Deixe a sorte decidir o que você vai assistir hoje!</p>
+    
+    <button onclick="girarRoleta()">Sortear Vencedor do Oscar</button>
+    
+    <div id="resultado" style="display:none; margin-top:30px; background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin-left: auto; margin-right: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <h2 id="titulo" style="color: #2c3e50; margin-bottom: 15px;"></h2>
+        <img id="capa" src="" alt="Capa do Filme" width="250" style="border-radius: 8px;">
+        <p style="color: #e67e22; font-weight: bold; font-size: 1.2em; margin: 15px 0;">🤖 <span id="ia"></span></p>
+        <p id="sinopse" style="text-align: justify; line-height: 1.6;"></p>
+    </div>
+
+    <script>
+        async function girarRoleta() {
+            try {
+                document.getElementById('ia').innerText = "A IA está gerando o comentário...";
+                document.getElementById('resultado').style.display = 'block';
+
+                const resposta = await fetch('http://localhost:8080/api/roleta/oscar');
+                const filme = await resposta.json();
+                
+                document.getElementById('titulo').innerText = filme.titulo;
+                document.getElementById('capa').src = filme.urlCapa;
+                document.getElementById('ia').innerText = filme.comentarioIa;
+                document.getElementById('sinopse').innerText = filme.sinopse;
+            } catch (erro) {
+                alert("Erro ao conectar com a API local. O servidor Java está rodando?");
+            }
+        }
+    </script>
+</body>
+</html>

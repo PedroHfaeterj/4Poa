@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Movfy - Meu Diário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onload="carregarDiario()">
+    <!-- Navegação -->
+    <nav>
+        <a href="index.html">Meu Diário</a> | 
+        <a href="adicionar.html">Adicionar Filme</a> | 
+        <a href="roleta.html">Roleta</a>
+    </nav>
+
+    <h1>Filmes Assistidos</h1>
+    
+    <!-- Botão e área da IA -->
+    <button onclick="gerarRecomendacao()">Recomendar Filme com IA</button>
+    <p id="area-recomendacao" style="font-weight: bold; color: blue;"></p>
+
+    <!-- Grade de filmes -->
+    <div id="grade-filmes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+        <!-- Os cards gerados pelo JS aparecerão aqui -->
+    </div>
+
+    <script>
+        async function carregarDiario() {
+            const res = await fetch('http://localhost:8080/api/diario');
+            const filmes = await res.json();
+            
+            const grade = document.getElementById('grade-filmes');
+            grade.innerHTML = ''; // Limpa a grade antes de preencher
+            
+            filmes.forEach(filme => {
+                grade.innerHTML += `
+                    <div class="card">
+                        <img src="${filme.urlCapa}" alt="${filme.titulo}" width="100%">
+                        <h3>${filme.titulo}</h3>
+                        <p>Nota: ⭐ ${filme.nota}/5</p>
+                    </div>
+                `;
+            });
+        }
+
+        async function gerarRecomendacao() {
+            document.getElementById('area-recomendacao').innerText = "A IA está pensando...";
+            const res = await fetch('http://localhost:8080/api/diario/recomendar');
+            const textoIa = await res.text();
+            document.getElementById('area-recomendacao').innerText = "🤖 " + textoIa;
+        }
+    </script>
+</body>
+</html>
