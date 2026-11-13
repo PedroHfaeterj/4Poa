@@ -6,48 +6,244 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body onload="carregarDiario()">
-    <!-- Navegação -->
     <nav>
         <a href="index.html">Meu Diário</a> | 
         <a href="adicionar.html">Adicionar Filme</a> | 
-        <a href="roleta.html">Roleta</a>
+        <a href="roleta.html">Roleta do Oscar</a>
     </nav>
 
-    <h1>Filmes Assistidos</h1>
-    
-    <!-- Botão e área da IA -->
-    <button onclick="gerarRecomendacao()">Recomendar Filme com IA</button>
-    <p id="area-recomendacao" style="font-weight: bold; color: blue;"></p>
+    <div class="layout-diario">
+        <div class="area-filmes">
+            <h1>Meus Filmes Assistidos</h1>
+            <div id="grade-filmes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 20px; margin-top: 20px;">
+            </div>
+        </div>
 
-    <!-- Grade de filmes -->
-    <div id="grade-filmes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
-        <!-- Os cards gerados pelo JS aparecerão aqui -->
+        <div class="area-chat">
+            <div class="chat-header">🤖 CinemIA - Assistente</div>
+            <div class="chat-mensagens" id="chat-box">
+                <div class="msg ia">Olá! Eu sou a CinemIA. Me diga que tipo de filme você está procurando hoje ou peça uma recomendação baseada no seu diário!</div>
+            </div>
+            
+            <button onclick="pedirRecomendacaoRapida()" style="margin-bottom: 10px; background: #2a5298; font-size: 13px; padding: 8px;">✨ Sugerir com base no meu Diário</button>
+            
+            <div class="chat-input-area">
+                <input type="text" id="mensagemInput" placeholder="Ex: Quero um suspense..." onkeypress="if(event.key === 'Enter') enviarMensagemChat()">
+                <button onclick="enviarMensagemChat()">Enviar</button>
+            </div>
+        </div>
     </div>
 
+    <!-- Modal Customizado de Edição -->
+    <div class="modal-overlay" id="modalAvaliacao">
+        <div class="modal-box">
+            <h2>Editar Avaliação</h2>
+            <p class="modal-subtitulo" id="modalTituloFilme"></p>
+            
+            <div class="estrelas-container" id="estrelasContainer">
+                <span class="estrela-btn" onclick="selecionarEstrela(1)">★</span>
+                <span class="estrela-btn" onclick="selecionarEstrela(2)">★</span>
+                <span class="estrela-btn" onclick="selecionarEstrela(3)">★</span>
+                <span class="estrela-btn" onclick="selecionarEstrela(4)">★</span>
+                <span class="estrela-btn" onclick="selecionarEstrela(5)">★</span>
+            </div>
+
+            <textarea id="modalComentario" class="modal-textarea" placeholder="Escreva sua crítica ou comentário sobre o filme (opcional)..."></textarea>
+
+            <div class="modal-acoes">
+                <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+                <button onclick="confirmarEdicao()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-msg" id="toastMsg">Avaliação atualizada!</div>
+
     <script>
+        let idFilmeEditando = null;
+        let notaSelecionada = 5;
+
+        function mostrarToast(texto) {
+            const toast = document.getElementById('toastMsg');
+            toast.innerText = texto;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        function obterFilmesLocais() {
+            try {
+                const dados = localStorage.getItem('movfy_diario');
+                const lista = dados ? JSON.parse(dados) : [];
+                return Array.isArray(lista) ? lista : [];
+            } catch (e) {
+                localStorage.removeItem('movfy_diario');
+                return [];
+            }
+        }
+
+        function renderizarEstrelasTexto(nota) {
+            const n = Math.max(1, Math.min(5, Number(nota) || 5));
+            return "★".repeat(n) + "☆".repeat(5 - n);
+        }
+
         async function carregarDiario() {
-            const res = await fetch('http://localhost:8080/api/diario');
-            const filmes = await res.json();
-            
+            let filmes = obterFilmesLocais();
+
+            try {
+                const res = await fetch('http://localhost:8080/api/diario');
+                if (res.ok) {
+                    const filmesServidor = await res.json();
+                    filmesServidor.forEach(fServ => {
+                        if (fServ.nota != null && !filmes.some(fLocal => Number(fLocal.id) === Number(fServ.id))) {
+                            filmes.push({
+                                id: fServ.id,
+                                titulo: fServ.titulo,
+                                urlCapa: fServ.urlCapa,
+                                nota: fServ.nota,
+                                comentario: ""
+                            });
+                        }
+                    });
+                    localStorage.setItem('movfy_diario', JSON.stringify(filmes));
+                }
+            } catch (e) {}
+
             const grade = document.getElementById('grade-filmes');
-            grade.innerHTML = ''; // Limpa a grade antes de preencher
+            grade.innerHTML = '';
             
+            if (filmes.length === 0) {
+                grade.innerHTML = '<p style="margin-top: 20px; color: #aaa;">Você ainda não tem filmes salvos. Vá em "Adicionar Filme" para começar!</p>';
+                return;
+            }
+
             filmes.forEach(filme => {
+                const comentarioHtml = filme.comentario 
+                    ? `<div class="comentario-user">"${filme.comentario}"</div>` 
+                    : '';
+
                 grade.innerHTML += `
                     <div class="card">
-                        <img src="${filme.urlCapa}" alt="${filme.titulo}" width="100%">
-                        <h3>${filme.titulo}</h3>
-                        <p>Nota: ⭐ ${filme.nota}/5</p>
+                        <div>
+                            <img src="${filme.urlCapa}" alt="${filme.titulo}">
+                            <h3>${filme.titulo}</h3>
+                            <p style="margin-bottom: 8px; color: #f39c12; font-size: 1.15em; letter-spacing: 2px;">
+                                ${renderizarEstrelasTexto(filme.nota)} <span style="font-size: 0.8em; color: #ccc;">(${filme.nota}/5)</span>
+                            </p>
+                            ${comentarioHtml}
+                        </div>
+                        <div class="card-acoes">
+                            <button class="btn-editar" onclick="abrirModalEdicao(${filme.id})">✏️ Editar</button>
+                            <button class="btn-remover" onclick="removerFilme(${filme.id})">🗑️ Remover</button>
+                        </div>
                     </div>
                 `;
             });
         }
 
-        async function gerarRecomendacao() {
-            document.getElementById('area-recomendacao').innerText = "A IA está pensando...";
-            const res = await fetch('http://localhost:8080/api/diario/recomendar');
-            const textoIa = await res.text();
-            document.getElementById('area-recomendacao').innerText = "🤖 " + textoIa;
+        function selecionarEstrela(valor) {
+            notaSelecionada = valor;
+            const estrelas = document.querySelectorAll('#estrelasContainer .estrela-btn');
+            estrelas.forEach((estrela, index) => {
+                estrela.classList.toggle('ativa', index < valor);
+            });
+        }
+
+        function abrirModalEdicao(id) {
+            const filmes = obterFilmesLocais();
+            const filme = filmes.find(f => Number(f.id) === Number(id));
+            if (!filme) return;
+
+            idFilmeEditando = filme.id;
+            document.getElementById('modalTituloFilme').innerText = filme.titulo;
+            document.getElementById('modalComentario').value = filme.comentario || '';
+            selecionarEstrela(Number(filme.nota) || 5);
+            document.getElementById('modalAvaliacao').classList.add('ativo');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalAvaliacao').classList.remove('ativo');
+            idFilmeEditando = null;
+        }
+
+        async function confirmarEdicao() {
+            if (idFilmeEditando === null) return;
+            let filmes = obterFilmesLocais();
+            const index = filmes.findIndex(f => Number(f.id) === Number(idFilmeEditando));
+            if (index === -1) return;
+
+            filmes[index].nota = notaSelecionada;
+            filmes[index].comentario = document.getElementById('modalComentario').value.trim();
+
+            localStorage.setItem('movfy_diario', JSON.stringify(filmes));
+
+            try {
+                await fetch(`http://localhost:8080/api/diario/${idFilmeEditando}/${notaSelecionada}`, { method: 'POST' });
+            } catch (e) {}
+
+            fecharModal();
+            carregarDiario();
+            mostrarToast("✅ Avaliação atualizada com sucesso!");
+        }
+
+        function removerFilme(id) {
+            let filmes = obterFilmesLocais().filter(f => Number(f.id) !== Number(id));
+            localStorage.setItem('movfy_diario', JSON.stringify(filmes));
+            carregarDiario();
+            mostrarToast("🗑️ Filme removido do diário.");
+        }
+
+        function pedirRecomendacaoRapida() {
+            const input = document.getElementById('mensagemInput');
+            input.value = "Me recomende um filme baseado nas minhas notas do diário!";
+            enviarMensagemChat();
+        }
+
+        async function enviarMensagemChat() {
+            const input = document.getElementById('mensagemInput');
+            const textoUsuario = input.value.trim();
+            if (!textoUsuario) return;
+
+            const chatBox = document.getElementById('chat-box');
+            
+            chatBox.innerHTML += `<div class="msg user">${textoUsuario}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const idLoading = 'loading-' + Date.now();
+            chatBox.innerHTML += `
+                <div class="msg ia" id="${idLoading}">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const filmes = obterFilmesLocais();
+            const resumoFilmes = filmes.map(f => `${f.titulo} (Nota ${f.nota}/5)`);
+
+            try {
+                const res = await fetch('http://localhost:8080/api/diario/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mensagem: textoUsuario,
+                        filmes: resumoFilmes
+                    })
+                });
+                
+                const respostaIa = await res.text();
+                const msgLoading = document.getElementById(idLoading);
+                if (msgLoading) {
+                    msgLoading.innerText = respostaIa;
+                }
+            } catch (e) {
+                const msgLoading = document.getElementById(idLoading);
+                if (msgLoading) {
+                    msgLoading.innerText = "Ops, erro ao conectar com a IA no servidor Java.";
+                }
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
     </script>
 </body>

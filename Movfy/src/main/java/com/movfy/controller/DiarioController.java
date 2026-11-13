@@ -33,13 +33,19 @@ public class DiarioController {
         return null;
     }
 
-    @GetMapping("/recomendar")
-    public String obterRecomendacao() {
-        return iaService.recomendarBaseadoNoHistorico();
-    }
+   
     
     @GetMapping("/buscar")
 public List<Filme> buscarFilmePorNome(@RequestParam String nome) {
     return tmdb.buscarFilmesPorTitulo(nome);
 }
+    
+    
+    @PostMapping("/chat")
+    @SuppressWarnings("unchecked")
+    public String conversarComIa(@RequestBody java.util.Map<String, Object> payload) {
+        String mensagem = (String) payload.get("mensagem");
+        List<String> filmes = (List<String>) payload.get("filmes");
+        return iaService.conversarNoChat(mensagem, filmes);
+    }
 }

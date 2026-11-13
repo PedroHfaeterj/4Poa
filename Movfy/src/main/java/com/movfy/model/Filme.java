@@ -16,11 +16,11 @@ public class Filme {
     
     private Integer nota;
     
+    private String comentarioIa;
+    
     @Column(length = 2000)
     private String sinopse;
     
     private String urlCapa;
     
-    @Column(length = 1000)
-    private String comentarioIa;
 }

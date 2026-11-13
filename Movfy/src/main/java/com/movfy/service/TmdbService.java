@@ -2,14 +2,13 @@ package com.movfy.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.movfy.model.Filme;
-
-import tools.jackson.databind.JsonNode;
 
 @Service
 public class TmdbService {
@@ -20,22 +19,36 @@ public class TmdbService {
     @Value("${tmdb.api.url}")
     private String apiUrl;
 
-    // MÉTODO ANTIGO (Usado pela Roleta e para salvar filmes)
     public Filme buscarFilmePorId(Long id) {
         RestTemplate restTemplate = new RestTemplate();
         String url = apiUrl + "/movie/" + id + "?language=pt-BR&api_key=" + apiKey;
         
         try {
-            JsonNode root = restTemplate.getForObject(url, JsonNode.class);
-            if (root != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> root = restTemplate.getForObject(url, Map.class);
+            
+            if (root != null && root.containsKey("id")) {
                 Filme filme = new Filme();
-                filme.setId(root.path("id").asLong());
-                filme.setTitulo(root.path("title").asText());
-                filme.setSinopse(root.path("overview").asText());
+                filme.setId(Long.valueOf(root.get("id").toString()));
+                filme.setTitulo((String) root.get("title"));
+                filme.setSinopse((String) root.get("overview"));
                 
-                String poster = root.path("poster_path").asText();
-                if (!poster.equals("null") && !poster.isEmpty()) {
-                    filme.setUrlCapa("https://image.tmdb.org/t/p/w500" + poster);
+                // Extrai os 4 dígitos do ano de lançamento (ex: "2023-07-19" -> "2023")
+                Object dataObj = root.get("release_date");
+                String ano = "Clássico";
+                if (dataObj != null && dataObj.toString().length() >= 4) {
+                    ano = dataObj.toString().substring(0, 4);
+                }
+                
+                // Guarda a faixa de premiação reaproveitando o campo comentarioIa
+                filme.setComentarioIa("🎬 Lançamento: " + ano + "  •  🏆 Vencedor do Oscar de Melhor Filme");
+                
+                Object posterObj = root.get("poster_path");
+                if (posterObj != null) {
+                    String poster = posterObj.toString();
+                    if (!poster.isEmpty() && !poster.equals("null")) {
+                        filme.setUrlCapa("https://image.tmdb.org/t/p/w500" + poster);
+                    }
                 }
                 return filme;
             }
@@ -45,30 +58,37 @@ public class TmdbService {
         return null;
     }
 
-    // MÉTODO NOVO (Usado pela barra de pesquisa do Diário)
     public List<Filme> buscarFilmesPorTitulo(String titulo) {
         RestTemplate restTemplate = new RestTemplate();
         String url = apiUrl + "/search/movie?query=" + titulo + "&language=pt-BR&api_key=" + apiKey;
         
         List<Filme> lista = new ArrayList<>();
         try {
-            JsonNode root = restTemplate.getForObject(url, JsonNode.class);
-            JsonNode results = root.path("results");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> root = restTemplate.getForObject(url, Map.class);
             
-            for (JsonNode node : results) {
-                Filme filme = new Filme();
-                filme.setId(node.path("id").asLong());
-                filme.setTitulo(node.path("title").asText());
+            if (root != null && root.containsKey("results")) {
+                @SuppressWarnings("rawtypes")
+                List results = (List) root.get("results");
                 
-                String poster = node.path("poster_path").asText();
-                if (!poster.equals("null") && !poster.isEmpty()) {
-                    filme.setUrlCapa("https://image.tmdb.org/t/p/w500" + poster);
-                } else {
-                    filme.setUrlCapa("https://via.placeholder.com/500x750?text=Sem+Capa"); 
+                for (Object item : results) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> node = (Map<String, Object>) item;
+                    
+                    Filme filme = new Filme();
+                    filme.setId(Long.valueOf(node.get("id").toString()));
+                    filme.setTitulo((String) node.get("title"));
+                    
+                    Object posterObj = node.get("poster_path");
+                    if (posterObj != null && !posterObj.toString().equals("null")) {
+                        filme.setUrlCapa("https://image.tmdb.org/t/p/w500" + posterObj.toString());
+                    } else {
+                        filme.setUrlCapa("https://via.placeholder.com/500x750?text=Sem+Capa"); 
+                    }
+                    
+                    lista.add(filme);
+                    if (lista.size() >= 5) break; 
                 }
-                
-                lista.add(filme);
-                if (lista.size() >= 5) break; 
             }
         } catch (Exception e) {
             System.err.println("Erro na busca por nome: " + e.getMessage());
